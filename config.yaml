@@ -1,0 +1,134 @@
+# Barrier Monitor Configuration
+
+# Email notification settings
+email:
+  sender: "your.email@gmail.com"
+  recipients:
+    - "recipient1@example.com"
+    - "recipient2@example.com"
+  subject_prefix: "[BARRIER ALERT]"
+  oauth_credentials_file: "credentials.json"
+  oauth_token_file: "token.pickle"
+
+# Circuit Configuration
+circuits:
+  circuit1:
+    name: "Main Entrance"
+    gpio_pin: 17
+    description: "Main entrance barrier photocell"
+    alert_threshold_sec: 30
+  circuit2:
+    name: "Exit Gate"
+    gpio_pin: 27
+    description: "Exit gate barrier photocell"
+    alert_threshold_sec: 30
+
+# LTE Configuration
+lte:
+  enabled: true
+  port: "/dev/ttyUSB0"  # Serial port for LTE HAT
+  baud_rate: 115200
+  apn: "your.apn.here"  # Your cellular provider's APN
+  pin: ""  # SIM PIN if required
+  init_timeout_sec: 30
+  connection_timeout_sec: 60
+  signal_check_interval_sec: 300
+  min_signal_strength: 10  # Minimum acceptable signal strength (0-31)
+  failover:
+    enabled: true
+    retry_interval_sec: 300
+    max_retries: 3
+
+# Notification Settings
+notifications:
+  sms:
+    enabled: true
+    recipients:
+      - "+441234567890"
+      - "+441234567891"
+    subject_prefix: "[BARRIER ALERT]"
+    notification_cooldown_min: 5
+    max_daily_notifications: 50
+    reset_time: "00:00"  # Time when daily notification count resets
+
+# Web Interface Settings
+web_interface:
+  enabled: true
+  host: "0.0.0.0"
+  port: 5000
+  ssl:
+    enabled: false
+    cert_file: "cert.pem"
+    key_file: "key.pem"
+  authentication:
+    enabled: true
+    username: "admin"
+    password: "change_this_password"
+  session_timeout_min: 60
+
+# System Settings
+system:
+  log_level: "INFO"
+  log_file: "/var/log/barrier-monitor.log"
+  max_log_size_mb: 10
+  max_log_backups: 5
+  db_path: "/var/lib/barrier-monitor/history.db"
+  health_check_interval_sec: 300
+  maintenance:
+    db_cleanup_days: 30
+    enabled: true
+    time: "02:00"  # Time when maintenance tasks run
+
+# Development Settings (disable in production)
+development:
+  enabled: false
+  debug: false
+  mock_gpio: false
+  mock_lte: false
+
+# GPIO configuration
+gpio:
+  input_pin: 17  # GPIO pin number for photocell input
+  pull_up: true  # Enable internal pull-up resistor
+  active_low: true  # Sensor triggers on low signal (NC circuit)
+
+# Monitoring settings
+monitoring:
+  check_interval_ms: 100  # How often to check sensor state
+  photocell_timeout_sec: 30  # Time before triggering alert
+  notification_cooldown_min: 5  # Minimum time between notifications
+  max_daily_notifications: 50  # Maximum notifications per day
+  reset_time: "00:00"  # When to reset daily notification counter
+
+# Logging configuration
+logging:
+  file: "/var/log/barrier-monitor.log"
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  max_size_mb: 10
+  backup_count: 5
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+
+# Debug settings
+debug:
+  enabled: false  # Enable debug mode
+  verbose_logging: false  # Enable verbose logging
+  simulate_failures: false  # Simulate random failures (testing only)
+
+# Remote Configuration API settings
+remote_config:
+  enabled: true
+  api_key: "your_secure_api_key_here"
+  allowed_ips:
+    - "192.168.1.0/24"
+    - "10.0.0.0/8"
+  backup_enabled: true
+  backup_count: 10
+  backup_path: "/var/backup/barrier-monitor/config"
+
+# Historical Data settings
+historical_data:
+  database_path: "/var/lib/barrier-monitor/history.db"
+  retention_days: 30
+  backup_enabled: true
+  backup_interval_hours: 24
+  backup_path: "/var/backup/barrier-monitor/"

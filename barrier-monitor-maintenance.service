@@ -1,0 +1,22 @@
+[Unit]
+Description=Barrier Monitor Maintenance Service
+After=barrier-monitor.service
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/opt/barrier-monitor
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/barrier-monitor/maintenance.py
+
+# Security settings
+ProtectSystem=full
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

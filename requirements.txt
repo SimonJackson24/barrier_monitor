@@ -1,0 +1,30 @@
+# Core dependencies
+RPi.GPIO>=0.7.0
+pyserial>=3.5
+PyYAML>=6.0
+Flask>=2.0.0
+Flask-SocketIO>=5.1.1
+google-auth>=2.3.3
+google-auth-oauthlib>=0.4.6
+google-auth-httplib2>=0.1.0
+google-api-python-client>=2.0.0
+
+# Database and storage
+SQLAlchemy>=1.4.0
+
+# Monitoring and logging
+psutil>=5.8.0
+python-dateutil>=2.8.2
+
+# Web interface
+eventlet>=0.33.0
+python-engineio>=4.0.0
+python-socketio>=5.0.0
+gevent>=21.12.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=3.0.0
+black>=22.3.0
+flake8>=4.0.0
+mypy>=0.950

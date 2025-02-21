@@ -1,0 +1,32 @@
+[Unit]
+Description=Barrier System Monitoring Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/barrier-monitor
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/barrier-monitor/monitor.py
+Restart=always
+RestartSec=1
+StandardOutput=append:/var/log/barrier-monitor.log
+StandardError=append:/var/log/barrier-monitor.log
+
+# Security settings
+ProtectSystem=full
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+# Resource limits
+CPUQuota=25%
+MemoryMax=100M
+TasksMax=10
+
+[Install]
+WantedBy=multi-user.target
