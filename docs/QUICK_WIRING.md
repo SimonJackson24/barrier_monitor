@@ -58,31 +58,230 @@ TX->RX ───────────┘          5V ────────
 
 ### Photocell Circuit Detail
 ```
+Photocell Terminal Layout:
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│    ┌─────────── Photocell ──────────┐          │
+│    │                                │          │
+│    │   Power         Relay Contacts │          │
+│    │  +    -         NO   C    NC  │          │
+│    │  │    │         │    │    │   │          │
+│    └──┼────┼─────────┼────┼────┼───┘          │
+│       │    │                │    │             │
+│       │    │                │    │             │
+│    12V│   GND              │    │             │
+│ Power │                    │    │             │
+│ Supply│                    │    │             │
+│       │                    │    │             │
+└───────┴────────────────────┴────┴─────────────┘
+
 Circuit 1 (Main Entrance):
 
-     3.3V (Pin 1)
-          │
-          ▼
-    ┌────[10kΩ]────┐
-    │              │
-    │              ▼
-    │         GPIO17 (Pin 11)
-    │              │
-    └──► [Photocell] ──► GND
-         (NC Contact)
+Power Section:
+   12V Power Supply
+        │
+    ┌───┴───┐
+    │       │
+    ▼       ▼
+   (+)     (-)
+Photocell  GND
+
+Signal Section (Voltage Free Contacts):
+   3.3V (Pi Pin 1)
+        │
+        ▼
+   ┌───[10kΩ]
+   │
+   │
+   │            ┌────────┐
+   └────────────┤   C    │
+                │        │ Photocell
+                │   NC   │
+                └────┬───┘
+                     │
+                     │
+                     ▼
+                  GPIO23 (Pin 16)
 
 Circuit 2 (Exit Gate):
 
-     3.3V (Pin 1)
-          │
-          ▼
-    ┌────[10kΩ]────┐
-    │              │
-    │              ▼
-    │         GPIO27 (Pin 13)
-    │              │
-    └──► [Photocell] ──► GND
-         (NC Contact)
+Power Section:
+   12V Power Supply
+        │
+    ┌───┴───┐
+    │       │
+    ▼       ▼
+   (+)     (-)
+Photocell  GND
+
+Signal Section (Voltage Free Contacts):
+   3.3V (Pi Pin 1)
+        │
+        ▼
+   ┌───[10kΩ]
+   │
+   │
+   │            ┌────────┐
+   └────────────┤   C    │
+                │        │ Photocell
+                │   NC   │
+                └────┬───┘
+                     │
+                     │
+                     ▼
+                  GPIO24 (Pin 18)
+
+Connection Summary:
+┌────────────────────────────────────────────────────┐
+│ 1. Power Connections (Each Photocell):            │
+│    • (+) terminal → 12V power supply positive     │
+│    • (-) terminal → Power supply ground           │
+│                                                   │
+│ 2. Signal Connections (Each Photocell):           │
+│    • C terminal  → 3.3V via 10kΩ resistor        │
+│    • NC terminal → GPIO pin                       │
+│    • NO terminal → Not used                       │
+└────────────────────────────────────────────────────┘
+
+Operating Logic:
+┌────────────────────────────────────────────────────┐
+│ Normal State (Beam Aligned):                       │
+│ • Internal relay energized                         │
+│ • C and NC contacts connected                      │
+│ • 3.3V reaches GPIO through NC contact            │
+│ • GPIO reads HIGH                                  │
+│                                                   │
+│ Alarm State (Beam Broken):                        │
+│ • Internal relay de-energized                     │
+│ • C and NC contacts separated                     │
+│ • GPIO pulled to ground                           │
+│ • GPIO reads LOW                                  │
+└────────────────────────────────────────────────────┘
+
+Important Notes:
+┌────────────────────────────────────────────────────┐
+│ • Power and signal circuits are fully isolated     │
+│ • Use C and NC terminals for fail-safe operation   │
+│ • NO terminal is not used in this application     │
+│ • Multiple photocells can share the same          │
+│   12V power supply                                │
+└────────────────────────────────────────────────────┘
+
+### Step-by-Step Wiring Instructions
+
+1. Power Circuit Connections
+```
+For each photocell:
+1. Connect the (+) terminal to 12V DC power supply positive
+2. Connect the (-) terminal to power supply ground (GND)
+3. Verify the power LED on the photocell illuminates
+```
+
+2. Signal Circuit Connections
+```
+For Main Entrance (Circuit 1):
+1. Connect photocell C (Common) terminal to:
+   - Raspberry Pi 3.3V (Pin 1)
+   - Through a 10kΩ pull-up resistor
+
+2. Connect photocell NC (Normally Closed) terminal to:
+   - Raspberry Pi GPIO23 (Pin 16)
+
+For Exit Gate (Circuit 2):
+1. Connect photocell C (Common) terminal to:
+   - Raspberry Pi 3.3V (Pin 1)
+   - Through a 10kΩ pull-up resistor
+
+2. Connect photocell NC (Normally Closed) terminal to:
+   - Raspberry Pi GPIO24 (Pin 18)
+
+Note: The NO (Normally Open) terminal is not used
+```
+
+3. Ground Connections
+```
+1. Connect all GPIO ground connections to:
+   - Raspberry Pi GND (Pin 6, 9, 14, 20, 25, 30, 34, or 39)
+2. Keep power supply ground separate from GPIO ground
+```
+
+### Why These Connections?
+
+1. Power Circuit (12V)
+```
+Purpose: Powers the photocell's internal components
+- (+) terminal needs 12V DC for reliable operation
+- (-) terminal completes the power circuit
+- Isolated from signal circuit for safety
+```
+
+2. Signal Circuit (3.3V)
+```
+Purpose: Provides fail-safe beam break detection
+- C terminal gets 3.3V through pull-up resistor because:
+  * Creates a reliable reference voltage
+  * Pull-up resistor limits current for safety
+  * 3.3V is Raspberry Pi's logic level
+
+- NC terminal connects to GPIO because:
+  * Normally Closed = closed when beam aligned
+  * Opens when beam broken (fail-safe)
+  * Direct connection to GPIO for instant detection
+
+- Pull-up resistor (10kΩ):
+  * Limits current to safe levels (~0.33mA)
+  * Provides clean signal transition
+  * Standard value for Raspberry Pi GPIO
+```
+
+3. Safety Features
+```
+This wiring creates a fail-safe system:
+1. Beam break → NC contact opens → GPIO reads LOW
+2. Power loss → NC contact opens → GPIO reads LOW
+3. Wire break → Circuit opens → GPIO reads LOW
+4. All failure modes trigger an alarm condition
+```
+
+### Common Issues and Solutions
+```
+1. No power LED on photocell:
+   - Check 12V power supply connections
+   - Verify power supply is outputting 12V
+   - Check for reversed polarity
+
+2. Always reading beam break:
+   - Verify 3.3V at C terminal through pull-up
+   - Check NC terminal connection to GPIO
+   - Confirm beam alignment
+
+3. Not detecting beam breaks:
+   - Check GPIO pin number in software
+   - Verify pull-up resistor connection
+   - Test NC contact operation
+```
+
+### Testing Procedure
+```
+1. Power Test:
+   - Measure 12V DC across photocell + and - terminals
+   - Verify power LED is lit
+
+2. Signal Test:
+   With beam aligned:
+   - Measure 3.3V at GPIO pin
+   - Verify software reads HIGH
+
+   With beam blocked:
+   - Measure 0V at GPIO pin
+   - Verify software reads LOW
+
+3. Continuity Test:
+   With beam aligned:
+   - Check continuity between C and NC (should be connected)
+   
+   With beam blocked:
+   - Check continuity between C and NC (should be open)
 ```
 
 ### LTE HAT Layout
@@ -221,20 +420,31 @@ RPi GPIO Pin    ->   LTE HAT Pin
 
 1. **Circuit 1 (Main Entrance)**
    ```
-   [Photocell 1] ----+---- [GPIO 17 (Pin 11)]
+   [Photocell 1] ----+---- [GPIO 23 (Pin 16)]
                      |
                     [10kΩ]
                      |
-                    [3.3V (Pin 1)]
+                     |
+                     |
+                     ▼
+                  GPIO23 (Pin 16)
    ```
 
 2. **Circuit 2 (Exit Gate)**
    ```
-   [Photocell 2] ----+---- [GPIO 27 (Pin 13)]
+   [Photocell 2] ----+---- [GPIO 24 (Pin 18)]
                      |
-                    [10kΩ]
-                     |
-                    [3.3V (Pin 1)]
+                    [10kΩ]───┐
+                     |       |
+                     |       └────────► C
+                     |                 Photocell
+                     |                   NC ────────┐
+                     |                             ▼
+                     |                        GPIO24 (Pin 18)
+                     |                             │
+                     └──────────────────────────────┘
+                                               │
+                                              GND
    ```
 
 ## Pin Layout Reference
